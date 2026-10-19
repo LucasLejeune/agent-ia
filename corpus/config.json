@@ -1,0 +1,5 @@
+{
+  "entreprise": "Nordik",
+  "horaires": { "ouverture": "09:00", "fermeture": "18:00" },
+  "pays_livres": ["France", "Belgique", "Luxembourg"]
+}

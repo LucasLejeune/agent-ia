@@ -1,0 +1,3 @@
+Politique de confidentialité de Nordik.
+
+Nous collectons uniquement les données nécessaires au traitement des commandes : nom, adresse, email. Les données sont conservées 3 ans après le dernier achat. Vous pouvez demander la suppression de vos données à tout moment en écrivant à privacy@nordik.example.

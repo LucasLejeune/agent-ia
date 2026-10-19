@@ -1,0 +1,36 @@
+export const SCHEMA = `
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT PRIMARY KEY,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  content TEXT NOT NULL,
+  tools_used TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, id);
+CREATE TABLE IF NOT EXISTS documents (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  path TEXT UNIQUE NOT NULL,
+  hash TEXT NOT NULL,
+  indexed_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS chunks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  idx INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  embedding BLOB NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_chunks_doc ON chunks(document_id);
+CREATE TABLE IF NOT EXISTS contacts (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT,
+  city TEXT,
+  company TEXT
+);
+`;
