@@ -64,10 +64,17 @@ export async function ingestPath(rel = '.'): Promise<IngestResult> {
     }
 
     db.transaction(() => {
-      db.prepare('DELETE FROM documents WHERE path = ?').run(relPath);
-      const { lastInsertRowid } = db.prepare('INSERT INTO documents (path, hash) VALUES (?, ?)').run(relPath, hash);
+      const doc = db.prepare('SELECT id FROM documents WHERE path = ?').get(relPath) as { id: number } | undefined;
+      let docId: number;
+      if (doc) {
+        docId = doc.id;
+        db.prepare('DELETE FROM chunks WHERE document_id = ?').run(docId);
+        db.prepare('UPDATE documents SET hash = ?, indexed_at = CURRENT_TIMESTAMP WHERE id = ?').run(hash, docId);
+      } else {
+        docId = Number(db.prepare('INSERT INTO documents (path, hash) VALUES (?, ?)').run(relPath, hash).lastInsertRowid);
+      }
       const insert = db.prepare('INSERT INTO chunks (document_id, idx, content, embedding) VALUES (?, ?, ?, ?)');
-      chunks.forEach((content, idx) => insert.run(lastInsertRowid, idx, content, toBlob(vectors[idx] as number[])));
+      chunks.forEach((content, idx) => insert.run(docId, idx, content, toBlob(vectors[idx] as number[])));
     })();
     result.indexed.push(relPath);
   }

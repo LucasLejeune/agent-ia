@@ -5,16 +5,14 @@ export interface HistoryMessage {
   content: string;
 }
 
-export function createSession(id: string): void {
-  getDb().prepare('INSERT INTO sessions (id) VALUES (?)').run(id);
+export function createSession(id: string, userId: string): void {
+  getDb().prepare('INSERT INTO sessions (id, user_id) VALUES (?, ?)').run(id, userId);
 }
-
-export function sessionExists(id: string): boolean {
-  return getDb().prepare('SELECT 1 FROM sessions WHERE id = ?').get(id) !== undefined;
+export function sessionOwnedBy(id: string, userId: string): boolean {
+  return getDb().prepare('SELECT 1 FROM sessions WHERE id = ? AND user_id = ?').get(id, userId) !== undefined;
 }
-
-export function deleteSession(id: string): boolean {
-  return getDb().prepare('DELETE FROM sessions WHERE id = ?').run(id).changes > 0;
+export function deleteSession(id: string, userId: string): boolean {
+  return getDb().prepare('DELETE FROM sessions WHERE id = ? AND user_id = ?').run(id, userId).changes > 0;
 }
 
 export function addMessage(sessionId: string, role: 'user' | 'assistant', content: string, toolsUsed: string[] = []): void {

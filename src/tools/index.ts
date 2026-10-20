@@ -7,6 +7,7 @@ import { corpusRoot, resolveInCorpus, SUPPORTED_EXT, toRelative, walk } from '..
 import { calculate } from './calculator.js';
 import { defineTool, ToolRegistry } from './registry.js';
 import { validateSelect } from './sqlGuard.js';
+import { accessibleDocuments, canReadDocument } from '../auth/access.js';
 
 export const ALLOWED_TABLES = ['contacts'];
 const MAX_FILE_CHARS = 6000;
@@ -17,10 +18,7 @@ const listDocuments = defineTool({
   description: 'Liste les fichiers disponibles dans le corpus documentaire.',
   parameters: { type: 'object', properties: {} },
   schema: z.object({}).passthrough(),
-  run: () => {
-    const root = corpusRoot(config.CORPUS_DIR);
-    return { files: walk(root).map((f) => toRelative(root, f)) };
-  },
+  run: (_args, { user }) => ({ files: accessibleDocuments(user) }),
 });
 
 const readFile = defineTool({
@@ -32,8 +30,10 @@ const readFile = defineTool({
     required: ['path'],
   },
   schema: z.object({ path: z.string().min(1) }),
-  run: ({ path: rel }) => {
+  run: ({ path: rel }, { user }) => {
+    const root = corpusRoot(config.CORPUS_DIR);
     const abs = resolveInCorpus(config.CORPUS_DIR, rel);
+    if (!canReadDocument(user, toRelative(root, abs))) throw new Error('Accès refusé ou document non indexé');
     if (!SUPPORTED_EXT.has(path.extname(abs).toLowerCase())) throw new Error('Extension non autorisée');
     if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) throw new Error(`Fichier introuvable : ${rel}`);
     const text = fs.readFileSync(abs, 'utf8');
@@ -43,6 +43,7 @@ const readFile = defineTool({
 
 const sqlQuery = defineTool({
   name: 'sql_query',
+  adminOnly: true,
   description:
     'Exécute une requête SQL SELECT en lecture seule. Table disponible : contacts(id, name, email, city, company).',
   parameters: {

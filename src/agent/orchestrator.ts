@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import type { AuthUser } from '../auth/access.js';
 import { config } from '../config/index.js';
-import { addMessage, createSession, getHistory, sessionExists } from '../db/repo.js';
+import { addMessage, createSession, getHistory, sessionOwnedBy } from '../db/repo.js';
 import { HttpError } from '../errors.js';
 import { chat, type ChatMessage } from '../llm/ollama.js';
 import { logger } from '../logger.js';
@@ -20,16 +21,20 @@ export interface ChatResult {
 
 const stripThink = (s: string) => s.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
-export async function runChat(message: string, sessionId?: string): Promise<ChatResult> {
+export async function runChat(
+  message: string,
+  user: AuthUser,
+  sessionId?: string,
+): Promise<ChatResult> {
   let id = sessionId;
   if (id) {
-    if (!sessionExists(id)) throw new HttpError(404, `Session inconnue : ${id}`);
+    if (!sessionOwnedBy(id, user.id)) throw new HttpError(404, `Session inconnue : ${id}`);
   } else {
     id = randomUUID();
-    createSession(id);
+    createSession(id, user.id);
   }
 
-  const sources = await retrieve(message);
+  const sources = await retrieve(message, user);
   const context = sources.length
     ? '\n\nExtraits documentaires :\n' + sources.map((s, i) => `[${i + 1}] (${s.path})\n${s.content}`).join('\n\n')
     : '';
@@ -44,7 +49,7 @@ export async function runChat(message: string, sessionId?: string): Promise<Chat
   let answer = '';
 
   for (let i = 0; i <= config.MAX_TOOL_ITERATIONS; i++) {
-    const reply = await chat(messages, registry.definitions());
+    const reply = await chat(messages, registry.definitions(user));
     messages.push(reply);
 
     if (!reply.tool_calls?.length) {
@@ -57,9 +62,9 @@ export async function runChat(message: string, sessionId?: string): Promise<Chat
     }
     for (const call of reply.tool_calls) {
       const { name, arguments: args } = call.function;
-      logger.info({ sessionId: id, tool: name, args }, 'tool call');
+      logger.info({ sessionId: id, userId: user.id, tool: name, args }, 'tool call');
       toolsUsed.push(name);
-      const content = await registry.execute(name, args);
+      const content = await registry.execute(name, args, { user });
       messages.push({ role: 'tool', tool_name: name, content });
     }
   }
