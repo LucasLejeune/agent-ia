@@ -41,11 +41,16 @@ async function request<T>(path: string, body?: unknown, timeoutMs = config.LLM_T
   return (await res.json()) as T;
 }
 
-export async function chat(messages: ChatMessage[], tools: ToolDefinition[]): Promise<ChatMessage> {
+export async function chat(
+  messages: ChatMessage[],
+  tools: ToolDefinition[] = [],
+  opts: { json?: boolean } = {},
+): Promise<ChatMessage> {
   const data = await request<{ message: ChatMessage }>('/api/chat', {
     model: config.CHAT_MODEL,
     messages,
-    tools,
+    ...(tools.length > 0 ? { tools } : {}),
+    ...(opts.json ? { format: 'json' } : {}),
     stream: false,
   });
   return data.message;

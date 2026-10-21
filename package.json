@@ -14,13 +14,16 @@
     "test": "vitest run",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "auth:admin": "tsx scripts/create-admin.ts"
+    "auth:admin": "tsx scripts/create-admin.ts",
+    "db:check": "tsx scripts/check-data.ts",
+    "eval": "tsx scripts/eval.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
     "dotenv": "^16.4.5",
     "fastify": "^5.0.0",
     "pino": "^9.4.0",
+    "unpdf": "^1.9.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {

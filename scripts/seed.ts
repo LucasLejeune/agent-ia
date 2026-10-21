@@ -1,7 +1,9 @@
+import fs from 'node:fs';
 import { getDb, migrate } from '../src/db/index.js';
 
 migrate();
 const db = getDb();
+
 const contacts = [
   ['Alice Martin', 'alice.martin@example.com', 'Lille', 'Acme'],
   ['Bruno Lefevre', 'bruno.lefevre@example.com', 'Valenciennes', 'Globex'],
@@ -18,4 +20,11 @@ db.transaction(() => {
   const insert = db.prepare('INSERT INTO contacts (name, email, city, company) VALUES (?, ?, ?, ?)');
   for (const c of contacts) insert.run(...c);
 })();
-console.log(`${contacts.length} contacts insérés.`);
+
+db.exec(fs.readFileSync(new URL('./seed-business.sql', import.meta.url), 'utf8'));
+
+const count = (t: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
+console.log(
+  `Seed OK : ${contacts.length} contacts, ${count('customers')} clients, ${count('products')} produits, ` +
+    `${count('orders')} commandes, ${count('order_items')} lignes, ${count('payments')} paiements.`,
+);

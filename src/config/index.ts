@@ -7,13 +7,14 @@ const schema = z.object({
   CHAT_MODEL: z.string().min(1).default('qwen3:8b'),
   EMBED_MODEL: z.string().min(1).default('nomic-embed-text'),
   DB_PATH: z.string().default('./data/agent.db'),
-  CORPUS_DIR: z.string().default('./corpus'),
+  CORPUS_DIR: z.string().default('./documents'),
   LLM_TIMEOUT_MS: z.coerce.number().int().positive().default(120000),
-  MAX_TOOL_ITERATIONS: z.coerce.number().int().min(1).default(5),
+  MAX_TOOL_ITERATIONS: z.coerce.number().int().min(1).default(6),
   RAG_TOP_K: z.coerce.number().int().min(1).default(4),
   RAG_MIN_SCORE: z.coerce.number().min(0).max(1).default(0.35),
   CHUNK_SIZE: z.coerce.number().int().min(100).default(800),
   CHUNK_OVERLAP: z.coerce.number().int().min(0).default(100),
+  VERIFY_ANSWERS: z.enum(['true', 'false']).default('true').transform((v) => v === 'true'),
   LOG_LEVEL: z.string().default('info'),
 });
 

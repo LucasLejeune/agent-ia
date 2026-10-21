@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const SUPPORTED_EXT = new Set(['.md', '.txt', '.json', '.csv']);
+export const SUPPORTED_EXT = new Set(['.md', '.txt', '.json', '.csv', '.pdf']);
 
 /** Résout `rel` dans `corpusDir` ; lève une erreur si le résultat sort du corpus. */
 export function resolveInCorpus(corpusDir: string, rel: string): string {
