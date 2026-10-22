@@ -1,4 +1,6 @@
 import { migrate } from '../src/db/index.js';
+import { migrateBusiness } from '../src/db/business.js';
 
 migrate();
-console.log('Migration terminée.');
+migrateBusiness();
+console.log('Migrations terminées (base applicative + 3 bases métier).');

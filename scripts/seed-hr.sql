@@ -1,0 +1,16 @@
+BEGIN;
+DELETE FROM employees;
+DELETE FROM departments;
+INSERT INTO departments (id, name, city) VALUES (1, 'Ventes', 'Lille');
+INSERT INTO departments (id, name, city) VALUES (2, 'Logistique', 'Valenciennes');
+INSERT INTO departments (id, name, city) VALUES (3, 'Support', 'Lille');
+INSERT INTO departments (id, name, city) VALUES (4, 'IT', 'Paris');
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (1, 'Sophie Laurent', 'Directrice commerciale', 1, NULL, '2019-03-01', 58000);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (2, 'Marc Dupuis', 'Responsable logistique', 2, NULL, '2018-09-15', 52000);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (3, 'Nadia Haddad', 'Responsable support', 3, NULL, '2020-01-06', 48000);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (4, 'Julien Perrin', 'Responsable IT', 4, NULL, '2017-05-22', 61000);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (5, 'Camille Girard', 'Commerciale', 1, 1, '2021-02-01', 38000);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (6, 'Thomas Blanc', 'Commercial', 1, 1, '2022-06-13', 36500);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (7, 'Léa Fontaine', 'Agente logistique', 2, 2, '2022-10-03', 32000);
+INSERT INTO employees (id, name, job_title, department_id, manager_id, hire_date, salary) VALUES (8, 'Karim Mansouri', 'Conseiller support', 3, 3, '2023-04-17', 31000);
+COMMIT;

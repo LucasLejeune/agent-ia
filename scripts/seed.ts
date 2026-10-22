@@ -1,8 +1,7 @@
 import fs from 'node:fs';
-import { getDb, migrate } from '../src/db/index.js';
+import { getBusinessDb, migrateBusiness, type DbName } from '../src/db/business.js';
 
-migrate();
-const db = getDb();
+migrateBusiness();
 
 const contacts = [
   ['Alice Martin', 'alice.martin@example.com', 'Lille', 'Acme'],
@@ -15,16 +14,20 @@ const contacts = [
   ['Hugo Garnier', 'hugo.garnier@example.com', 'Paris', 'Acme'],
 ] as const;
 
-db.transaction(() => {
-  db.prepare('DELETE FROM contacts').run();
-  const insert = db.prepare('INSERT INTO contacts (name, email, city, company) VALUES (?, ?, ?, ?)');
+const sales = getBusinessDb('sales');
+sales.transaction(() => {
+  sales.prepare('DELETE FROM contacts').run();
+  const insert = sales.prepare('INSERT INTO contacts (name, email, city, company) VALUES (?, ?, ?, ?)');
   for (const c of contacts) insert.run(...c);
 })();
 
-db.exec(fs.readFileSync(new URL('./seed-business.sql', import.meta.url), 'utf8'));
+for (const name of ['catalog', 'hr', 'sales'] as DbName[]) {
+  getBusinessDb(name).exec(fs.readFileSync(new URL(`./seed-${name}.sql`, import.meta.url), 'utf8'));
+}
 
-const count = (t: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
+const count = (db: DbName, t: string) =>
+  (getBusinessDb(db).prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
 console.log(
-  `Seed OK : ${contacts.length} contacts, ${count('customers')} clients, ${count('products')} produits, ` +
-    `${count('orders')} commandes, ${count('order_items')} lignes, ${count('payments')} paiements.`,
+  `Seed OK. sales: ${count('sales', 'customers')} clients, ${count('sales', 'orders')} commandes, ${count('sales', 'order_items')} lignes | ` +
+    `catalog: ${count('catalog', 'products')} produits | hr: ${count('hr', 'employees')} employés.`,
 );
